@@ -98,14 +98,17 @@ rmse_final = -cross_val_score(LinearRegression(fit_intercept=False), X, y, cv=5,
 #Error: 1,073 (best)
 #line It also prints all 5 round scores (1,088, 1,067, 1,066, 1,067 and 1,075). They’re close together, so the model is stable.
              
-print('MRP x Outlet encoding RMSE:', rmse_final.mean())
+print('MRP x Outlet encoding RMSE:', rmse_final.mean())   #.mean() gives their average: 1,072.6, the main result for your method.
 print('RMSE for each fold:', rmse_final)
 
-print('RMSE if we predict the average:', y.std())
+print('RMSE if we predict the average:', y.std())     #y.std() is the standard deviation of sales: 1,706.
 
 model = LinearRegression(fit_intercept=False)
 model.fit(X, y)
-print(pd.Series(model.coef_, index=features))
+print(pd.Series(model.coef_, index=features))         
+
+#sales = units × price, so a zero price must give zero sales. 
+#It also makes each coefficient equal to the units sold per item in that store.”
 
 X_test = test[features]
 pred = model.predict(X_test)
