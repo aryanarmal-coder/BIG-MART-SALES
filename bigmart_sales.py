@@ -3,22 +3,26 @@ import matplotlib.pyplot as plt
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import cross_val_score
 
-train = pd.read_csv('data/train.csv')
+train = pd.read_csv('data/train.csv') #open train.csv and put it in a box called train
 test = pd.read_csv('data/test.csv')
 
 print(train.shape)
 print(test.shape)
 
-print(train.isnull().sum())
+print(train.isnull().sum())   #isnull() asks of every cell “is this empty?
 print(train.isnull().mean() * 100)
 print(test.isnull().mean() * 100)
 
-train['Units_Sold'] = train['Item_Outlet_Sales'] / train['Item_MRP']
+train['Units_Sold'] = train['Item_Outlet_Sales'] / train['Item_MRP']   #a ₹100 item with ₹1,500 in sales means 15 units were sold. Units let us compare cheap and expensive items fairly.
 
 print(train.groupby(train['Item_Weight'].isnull())['Units_Sold'].mean())
 print(train.groupby(train['Outlet_Size'].isnull())['Units_Sold'].mean())
 print(train[train['Item_Weight'].isnull()]['Outlet_Identifier'].value_counts())
-print(train[train['Outlet_Size'].isnull()]['Outlet_Identifier'].value_counts())
+print(train[train['Outlet_Size'].isnull()]['Outlet_Identifier'].value_counts())    
+value_counts()
+            
+             #train[ condition ] means “keep only the rows where this is true”, so only the rows with an empty cell.           counts which stores those rows come from.
+#What it shows: empty weights come from only 2 stores, and empty sizes from only 3. “Empty” really just means “which store it is”, and we already know the store. So there’s nothing to fill in.
 
 print(train.groupby('Outlet_Identifier')['Units_Sold'].mean())
 print(train.groupby('Outlet_Type')['Units_Sold'].mean())
@@ -81,10 +85,19 @@ print('Label encoding RMSE:', rmse_label.mean())
 X_onehot = pd.get_dummies(train['Outlet_Identifier'], dtype=float)
 X_onehot['Item_MRP'] = train['Item_MRP']
 rmse_onehot = -cross_val_score(LinearRegression(), X_onehot, y, cv=5, scoring='neg_root_mean_squared_error')
-print('One-hot encoding RMSE:', rmse_onehot.mean())
+print('One-hot encoding RMSE:', rmse_onehot.mean())    
+
+#get_dummies makes 10 yes/no (1/0) columns, one per store, and price is added as one column.
+#Problem: price has the same effect in every store. A ₹100 item adds the same sales in a grocery store as in a big supermarket.
+#Error: 1,129
 
 X = train[features]
-rmse_final = -cross_val_score(LinearRegression(fit_intercept=False), X, y, cv=5, scoring='neg_root_mean_squared_error')
+rmse_final = -cross_val_score(LinearRegression(fit_intercept=False), X, y, cv=5, scoring='neg_root_mean_squared_error')   
+
+#fit_intercept=False means the line starts at 0: price 0 means sales 0.
+#Error: 1,073 (best)
+#line It also prints all 5 round scores (1,088, 1,067, 1,066, 1,067 and 1,075). They’re close together, so the model is stable.
+             
 print('MRP x Outlet encoding RMSE:', rmse_final.mean())
 print('RMSE for each fold:', rmse_final)
 
